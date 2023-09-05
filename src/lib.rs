@@ -11,6 +11,15 @@ pub async fn on_deploy() {
     create_endpoint().await;
 }
 
+fn get_qry(qry: &HashMap<String, Value>, key: &str, default: i64) -> i64 {
+    qry.get(key)
+        .unwrap_or(&Value::from(""))
+        .as_str()
+        .unwrap_or("")
+        .parse()
+        .unwrap_or(default)
+}
+
 #[request_handler]
 async fn handler(
     _headers: Vec<(String, String)>,
@@ -19,23 +28,18 @@ async fn handler(
     body: Vec<u8>,
 ) {
     logger::init();
+    let mut front = image::load_from_memory(&body).unwrap();
+    let w: u32 = get_qry(&qry, "w", front.width() as i64) as u32;
+    let h: u32 = get_qry(&qry, "h", front.height() as i64) as u32;
+
+    if front.width() != w || front.height() != h {
+        front.resize(w, h, image::imageops::Lanczos3);
+    }
+
+    let l: i64 = get_qry(&qry, "l", 0);
+    let t: i64 = get_qry(&qry, "t", 0);
     let mut back = image::load_from_memory(BACK_BUF).unwrap();
-    let front = image::load_from_memory(&body).unwrap();
-    let x: i64 = qry
-        .get("x")
-        .unwrap_or(&Value::from("0"))
-        .as_str()
-        .unwrap_or("0")
-        .parse()
-        .unwrap_or(0);
-    let y: i64 = qry
-        .get("y")
-        .unwrap_or(&Value::from("0"))
-        .as_str()
-        .unwrap_or("0")
-        .parse()
-        .unwrap_or(0);
-    image::imageops::overlay(&mut back, &front, x, y);
+    image::imageops::overlay(&mut back, &front, l, t);
     let src_buf = back.as_bytes();
 
     let mut target_buf = std::io::Cursor::new(Vec::new());
