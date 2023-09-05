@@ -21,18 +21,20 @@ async fn handler(
     logger::init();
     let mut back = image::load_from_memory(BACK_BUF).unwrap();
     let front = image::load_from_memory(&body).unwrap();
-    log::debug!("{:?}", qry);
-    let x = qry
+    let x: i64 = qry
         .get("x")
-        .unwrap_or(&Value::from(0))
-        .as_i64()
+        .unwrap_or(&Value::from("0"))
+        .as_str()
+        .unwrap_or("0")
+        .parse()
         .unwrap_or(0);
-    let y = qry
+    let y: i64 = qry
         .get("y")
-        .unwrap_or(&Value::from(0))
-        .as_i64()
+        .unwrap_or(&Value::from("0"))
+        .as_str()
+        .unwrap_or("0")
+        .parse()
         .unwrap_or(0);
-    log::debug!("x: {}, y: {}", x, y);
     image::imageops::overlay(&mut back, &front, x, y);
     let src_buf = back.as_bytes();
 
