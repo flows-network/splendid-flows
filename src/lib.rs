@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use webhook_flows::{create_endpoint, request_handler, send_response};
 
 const BACK_BUF: &[u8] = include_bytes!("1000.webp") as &[u8];
-const FRONT_BUF: &[u8] = include_bytes!("NASA.png") as &[u8];
 
 #[no_mangle]
 #[tokio::main(flavor = "current_thread")]
@@ -15,12 +14,22 @@ pub async fn on_deploy() {
 async fn handler(
     _headers: Vec<(String, String)>,
     _subpath: String,
-    _qry: HashMap<String, Value>,
-    _body: Vec<u8>,
+    qry: HashMap<String, Value>,
+    body: Vec<u8>,
 ) {
     let mut back = image::load_from_memory(BACK_BUF).unwrap();
-    let front = image::load_from_memory(FRONT_BUF).unwrap();
-    image::imageops::overlay(&mut back, &front, 0, 0);
+    let front = image::load_from_memory(&body).unwrap();
+    let x = qry
+        .get("x")
+        .unwrap_or(&Value::from(0))
+        .as_i64()
+        .unwrap_or(0);
+    let y = qry
+        .get("y")
+        .unwrap_or(&Value::from(0))
+        .as_i64()
+        .unwrap_or(0);
+    image::imageops::overlay(&mut back, &front, x, y);
     let src_buf = back.as_bytes();
 
     let mut target_buf = std::io::Cursor::new(Vec::new());
