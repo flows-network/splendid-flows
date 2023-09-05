@@ -1,3 +1,4 @@
+use flowsnet_platform_sdk::logger;
 use serde_json::Value;
 use std::collections::HashMap;
 use webhook_flows::{create_endpoint, request_handler, send_response};
@@ -17,6 +18,7 @@ async fn handler(
     qry: HashMap<String, Value>,
     body: Vec<u8>,
 ) {
+    logger::init();
     let mut back = image::load_from_memory(BACK_BUF).unwrap();
     let front = image::load_from_memory(&body).unwrap();
     let x = qry
@@ -29,6 +31,7 @@ async fn handler(
         .unwrap_or(&Value::from(0))
         .as_i64()
         .unwrap_or(0);
+    log::debug!("x: {}, y: {}", x, y);
     image::imageops::overlay(&mut back, &front, x, y);
     let src_buf = back.as_bytes();
 
