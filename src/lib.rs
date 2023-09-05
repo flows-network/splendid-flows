@@ -33,7 +33,7 @@ async fn handler(
     let h: u32 = get_qry(&qry, "h", front.height() as i64) as u32;
 
     if front.width() != w || front.height() != h {
-        log::debug!("resizing to {w} x {h}");
+        log::debug!("resizing to {} x {}", w, h);
         front = front.resize(w, h, image::imageops::Lanczos3);
     }
 
