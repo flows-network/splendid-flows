@@ -21,6 +21,7 @@ async fn handler(
     logger::init();
     let mut back = image::load_from_memory(BACK_BUF).unwrap();
     let front = image::load_from_memory(&body).unwrap();
+    log::debug!("{:?}", qry);
     let x = qry
         .get("x")
         .unwrap_or(&Value::from(0))
