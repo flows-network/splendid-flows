@@ -3,7 +3,7 @@ use serde_json::Value;
 use std::collections::HashMap;
 use webhook_flows::{create_endpoint, request_handler, send_response};
 
-const BACK_BUF: &[u8] = include_bytes!("1000.webp") as &[u8];
+const BACK_BUF: &[u8] = include_bytes!("bg.jpg") as &[u8];
 
 #[no_mangle]
 #[tokio::main(flavor = "current_thread")]
