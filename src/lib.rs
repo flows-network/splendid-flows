@@ -35,7 +35,13 @@ async fn handler(
         Ok(_) => {
             send_response(
                 200,
-                vec![(String::from("content-type"), String::from("image/png"))],
+                vec![
+                    (String::from("Content-Type"), String::from("image/png")),
+                    (
+                        String::from("Access-Control-Allow-Origin"),
+                        String::from("*"),
+                    ),
+                ],
                 target_buf.into_inner(),
             );
         }
