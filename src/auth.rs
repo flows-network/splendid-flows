@@ -5,8 +5,17 @@ use http_req::{
     tls,
     uri::Uri,
 };
+use serde::Deserialize;
 use std::io::Write;
 use std::{convert::TryFrom, net::TcpStream};
+
+#[derive(Deserialize)]
+pub struct NotionAuth {
+    pub access_token: String,
+    pub bot_id: String,
+    pub workspace_id: String,
+    pub workspace_name: Option<String>,
+}
 
 fn basic_auth<U>(username: U, password: U) -> String
 where
@@ -21,7 +30,7 @@ where
     String::from_utf8_lossy(&buf).into_owned()
 }
 
-pub(crate) async fn auth(code: String) {
+pub(crate) async fn auth(code: String) -> Result<NotionAuth, String> {
     let client_id = std::env::var("NOTION_CLIENT_ID").unwrap();
     let client_secret = std::env::var("NOTION_CLIENT_SECRET").unwrap();
     let redirect_uri = std::env::var("NOTION_REDIRECT_URI").unwrap();
@@ -52,9 +61,10 @@ pub(crate) async fn auth(code: String) {
             true => {
                 let r = String::from_utf8_lossy(&writer).into_owned();
                 log::debug!("{}", r);
+                serde_json::from_slice(&writer).map_err(|e| e.to_string())
             }
-            false => {}
+            false => Err(String::from_utf8_lossy(&writer).into_owned()),
         },
-        Err(e) => {}
+        Err(e) => Err(e.to_string()),
     }
 }
