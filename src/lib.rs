@@ -25,7 +25,7 @@ async fn handle(
     logger::init();
 
     let code = qry.get("code").unwrap_or(&Value::Null).as_str();
-    let user = qry.get("user").unwrap_or(&Value::Null).as_str();
+    let user = qry.get("state").unwrap_or(&Value::Null).as_str();
     match (code, user) {
         (Some(code), Some(user)) if code != "" && user != "" => match auth::auth(code).await {
             Ok(author) => {
