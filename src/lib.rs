@@ -34,7 +34,7 @@ async fn handle(
                         let authors: Vec<NotionAuth> = serde_json::from_value(authors).unwrap();
                         let mut new_authors = authors
                             .into_iter()
-                            .filter(|t| t.bot_id == author.bot_id)
+                            .filter(|t| t.bot_id.eq(&author.bot_id))
                             .collect::<Vec<NotionAuth>>();
                         new_authors.push(author);
                         store_flows::set(user, serde_json::to_value(new_authors).unwrap(), None);
