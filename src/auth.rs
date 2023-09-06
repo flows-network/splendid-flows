@@ -1,13 +1,11 @@
 use base64::prelude::BASE64_STANDARD;
 use base64::write::EncoderWriter;
 use http_req::{
-    request::{Method, RequestBuilder},
-    tls,
+    request::{Method, Request},
     uri::Uri,
 };
 use serde::Deserialize;
 use std::io::Write;
-use std::{convert::TryFrom, net::TcpStream};
 
 #[derive(Deserialize)]
 pub struct NotionAuth {
@@ -39,23 +37,19 @@ pub(crate) async fn auth(code: String) -> Result<NotionAuth, String> {
 
     let addr = Uri::try_from("https://api.notion.com/v1/oauth/token").unwrap();
     let mut writer = Vec::new();
-    let stream = TcpStream::connect((addr.host().unwrap(), addr.corr_port())).unwrap();
-    let mut stream = tls::Config::default()
-        .connect(addr.host().unwrap_or(""), stream)
-        .unwrap();
     let body = serde_json::to_vec(&serde_json::json!({
         "grant_type": "authorization_code",
         "code": code,
         "redirect_uri": redirect_uri.as_str(),
     }))
     .unwrap();
-    match RequestBuilder::new(&addr)
+    match Request::new(&addr)
         .method(Method::POST)
         .header("Connection", "Close")
         .header("Authorization", basic.as_str())
         .header("Content-Length", &body.len())
         .body(&body)
-        .send(&mut stream, &mut writer)
+        .send(&mut writer)
     {
         Ok(response) => match response.status_code().is_success() {
             true => {
