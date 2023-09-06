@@ -48,6 +48,7 @@ pub(crate) async fn auth(code: String) -> Result<NotionAuth, String> {
         .header("Connection", "Close")
         .header("Authorization", basic.as_str())
         .header("Content-Length", &body.len())
+        .header("Content-Type", "application/json")
         .body(&body)
         .send(&mut writer)
     {
