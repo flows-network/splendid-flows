@@ -4,11 +4,11 @@ use http_req::{
     request::{Method, Request},
     uri::Uri,
 };
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::io::Write;
 
-#[derive(Deserialize)]
-pub struct NotionAuth {
+#[derive(Serialize, Deserialize)]
+pub(crate) struct NotionAuth {
     pub access_token: String,
     pub bot_id: String,
     pub workspace_id: String,
@@ -28,7 +28,7 @@ where
     String::from_utf8_lossy(&buf).into_owned()
 }
 
-pub(crate) async fn auth(code: String) -> Result<NotionAuth, String> {
+pub(crate) async fn auth(code: &str) -> Result<NotionAuth, String> {
     let client_id = std::env::var("NOTION_CLIENT_ID").unwrap();
     let client_secret = std::env::var("NOTION_CLIENT_SECRET").unwrap();
     let redirect_uri = std::env::var("NOTION_REDIRECT_URI").unwrap();
@@ -53,11 +53,7 @@ pub(crate) async fn auth(code: String) -> Result<NotionAuth, String> {
         .send(&mut writer)
     {
         Ok(response) => match response.status_code().is_success() {
-            true => {
-                let r = String::from_utf8_lossy(&writer).into_owned();
-                log::debug!("{}", r);
-                serde_json::from_slice(&writer).map_err(|e| e.to_string())
-            }
+            true => serde_json::from_slice(&writer).map_err(|e| e.to_string()),
             false => Err(String::from_utf8_lossy(&writer).into_owned()),
         },
         Err(e) => Err(e.to_string()),

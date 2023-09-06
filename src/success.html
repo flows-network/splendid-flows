@@ -9,15 +9,16 @@
     <div>
       Successfully installed <b>Collect & Gather</b> integration in your Notion.
       <br/>
-      This page will be closed automatically in <span id="countdown"></span> seconds.
+      This page will be redirected to Notion in <span id="countdown"></span> seconds.
     </div>
 
     <script>
       const INIT_SECONDS = 3;
       let secs = INIT_SECONDS;
-      setInterval(function() {
+      let interval = setInterval(function() {
         if (secs <= 0) {
-          window.close();
+          window.location.href = 'https://notion.so';
+          clearInterval(interval);
         }
         document.querySelector('#countdown').innerText = secs;
         --secs;
