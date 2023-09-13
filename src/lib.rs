@@ -31,7 +31,7 @@ async fn handler(
     let page = new_page();
     let r = notion.create_page(page).await;
     log::debug!("{:?}", r);
-    send_response(200, vec![], vec![]);
+    send_response(200, vec![], b"okok".to_vec());
 }
 
 fn new_page() -> PageCreateRequest {
