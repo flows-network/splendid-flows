@@ -1,3 +1,4 @@
+use flowsnet_platform_sdk::logger;
 use notion_flows::notion::{
     ids::{DatabaseId, PropertyId},
     models::{
@@ -10,7 +11,7 @@ use notion_flows::notion::{
 use serde_json::Value;
 use std::collections::HashMap;
 use std::str::FromStr;
-use webhook_flows::{create_endpoint, request_handler};
+use webhook_flows::{create_endpoint, request_handler, send_response};
 
 #[no_mangle]
 #[tokio::main(flavor = "current_thread")]
@@ -25,9 +26,12 @@ async fn handler(
     _headers: HashMap<String, Value>,
     _body: Vec<u8>,
 ) {
+    logger::init();
     let notion = NotionApi::new(std::env::var("NOTION_INTERNAL_SECRET").unwrap()).unwrap();
     let page = new_page();
-    _ = notion.create_page(page).await;
+    let r = notion.create_page(page).await;
+    log::debug!("{:?}", r);
+    send_response(200, vec![], vec![]);
 }
 
 fn new_page() -> PageCreateRequest {
