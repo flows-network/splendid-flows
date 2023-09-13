@@ -25,7 +25,7 @@ async fn handler(
     _headers: HashMap<String, Value>,
     _body: Vec<u8>,
 ) {
-    let notion = NotionApi::new("NOTION_INTERNAL_SECRET").unwrap();
+    let notion = NotionApi::new(std::env::var("NOTION_INTERNAL_SECRET").unwrap()).unwrap();
     let page = new_page();
     _ = notion.create_page(page).await;
 }
