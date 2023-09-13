@@ -28,6 +28,9 @@ async fn handler(
 ) {
     logger::init();
     let notion = NotionApi::new(std::env::var("NOTION_INTERNAL_SECRET").unwrap()).unwrap();
+    if let Ok(dbs) = notion.list_databases().await {
+        log::debug!("{:?}", dbs.results);
+    }
     let page = new_page();
     let r = notion.create_page(page).await;
     log::debug!("{:?}", r);
