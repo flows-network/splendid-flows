@@ -43,6 +43,8 @@ lazy_static! {
         std::env::var("DISCORD_TOKEN").expect("No discord token configure");
     static ref APPLICATION_ID: String =
         std::env::var("APPLICATION_ID").expect("No application_id configure");
+    static ref NOTION_AUTH_URL: String =
+        std::env::var("NOTION_AUTH_URL").expect("No notion_auth_url configure");
 }
 
 #[no_mangle]
@@ -133,7 +135,7 @@ async fn webhook_handler(
     }
 }
 
-// #[application_command_handler]
+#[application_command_handler]
 async fn discord_slash_command_handler(ac: ApplicationCommandInteraction) {
     logger::init();
     let bot = ProvidedBot::new(DISCORD_TOKEN.as_str());
@@ -178,7 +180,20 @@ async fn discord_slash_command_handler(ac: ApplicationCommandInteraction) {
             collect_gather(client, &ac, options).await;
         }
         "auth_gathering_notion" => {}
-        _ => {}
+        _ => {
+            _ = client
+                .edit_original_interaction_response(
+                    &ac.token,
+                    &serde_json::json!({
+                        "content":
+                            format!(
+                                "Click following link to authorized the Notion App\n{}",
+                                NOTION_AUTH_URL.as_str()
+                            )
+                    }),
+                )
+                .await;
+        }
     }
 }
 
@@ -252,6 +267,20 @@ async fn register_commands() {
     let http_client = HttpBuilder::new(DISCORD_TOKEN.as_str())
         .application_id(APPLICATION_ID.parse().unwrap())
         .build();
+
+    if let Ok(commands) = http_client.get_global_application_commands().await {
+        for c in commands.iter() {
+            match http_client
+                .delete_global_application_command(c.id.into())
+                .await
+            {
+                Err(e) => {
+                    log::error!("Failed delete old command '{}': {:?}", c.name, e);
+                }
+                Ok(_) => {}
+            }
+        }
+    }
 
     let command = serde_json::json!({
         "name": "auth_gathering_notion",
