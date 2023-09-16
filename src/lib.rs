@@ -4,8 +4,10 @@ use discord_flows::{
     message_handler,
     model::{
         application::interaction::InteractionResponseType,
-        application_command::CommandDataOptionValue,
-        prelude::application::interaction::application_command::ApplicationCommandInteraction,
+        // application_command::CommandDataOptionValue,
+        prelude::{
+            application::interaction::application_command::ApplicationCommandInteraction, Channel,
+        },
         Message,
     },
     Bot, ProvidedBot,
@@ -43,15 +45,15 @@ async fn handle(msg: Message) {
     if msg.author.bot {
         return;
     }
-    let client = bot.get_client();
-    _ = client
-        .send_message(
-            msg.channel_id.into(),
-            &serde_json::json!({
-                "content": msg.content,
-            }),
-        )
-        .await;
+    // let client = bot.get_client();
+    // _ = client
+    //     .send_message(
+    //         msg.channel_id.into(),
+    //         &serde_json::json!({
+    //             "content": msg.content,
+    //         }),
+    //     )
+    //     .await;
 }
 
 #[application_command_handler]
@@ -71,11 +73,41 @@ async fn handler(ac: ApplicationCommandInteraction) {
             }),
         )
         .await;
+    if let Ok(c) = client.get_channel(ac.channel_id.into()).await {
+        if let Channel::Guild(gc) = c {
+            if let Some(_) = gc.thread_metadata {
+                match client.get_messages(ac.channel_id.into(), "limit=100").await {
+                    Ok(messages) if messages.len() > 0 => {
+                        log::debug!("{:?}", messages);
+                        _ = client
+                            .edit_original_interaction_response(
+                                &ac.token,
+                                &serde_json::json!({
+                                    "content": "Messages has been saved to Notion"
+                                }),
+                            )
+                            .await;
+                    }
+                    _ => {
+                        _ = client
+                            .edit_original_interaction_response(
+                                &ac.token,
+                                &serde_json::json!({
+                                    "content": "Not find any message from channel"
+                                }),
+                            )
+                            .await;
+                    }
+                }
+                return;
+            }
+        }
+    }
     _ = client
         .edit_original_interaction_response(
             &ac.token,
             &serde_json::json!({
-                "content": "Pong"
+                "content": "Only work in a thread."
             }),
         )
         .await;
