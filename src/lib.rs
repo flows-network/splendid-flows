@@ -236,6 +236,6 @@ fn new_page(thread_name: &str, messages: Vec<Message>) -> PageCreateRequest {
     PageCreateRequest {
         parent: Parent::Database { database_id },
         properties,
-        children: None,
+        children: Some(blocks),
     }
 }
