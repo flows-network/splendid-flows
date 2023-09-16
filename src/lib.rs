@@ -269,6 +269,7 @@ async fn register_commands() {
         .build();
 
     if let Ok(commands) = http_client.get_global_application_commands().await {
+        log::debug!("Found {} old commands", commands.len());
         for c in commands.iter() {
             match http_client
                 .delete_global_application_command(c.id.into())
