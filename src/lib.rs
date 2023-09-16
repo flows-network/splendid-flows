@@ -62,7 +62,7 @@ pub async fn on_deploy() {
 }
 
 #[message_handler]
-async fn handle(msg: Message) {
+async fn discord_message_handler(msg: Message) {
     logger::init();
     let bot = ProvidedBot::new(DISCORD_TOKEN.as_str());
 
@@ -80,8 +80,61 @@ async fn handle(msg: Message) {
     //     .await;
 }
 
+#[request_handler]
+async fn webhook_handler(
+    _headers: Vec<(String, String)>,
+    _subpath: String,
+    qry: HashMap<String, Value>,
+    _body: Vec<u8>,
+) {
+    logger::init();
+
+    let code = qry.get("code").unwrap_or(&Value::Null).as_str();
+    let user = qry.get("state").unwrap_or(&Value::Null).as_str();
+    match (code, user) {
+        (Some(code), Some(user)) if code != "" && user != "" => match auth::auth(code).await {
+            Ok(author) => {
+                match store_flows::get(user) {
+                    Some(authors) => {
+                        let authors: Vec<NotionAuth> = serde_json::from_value(authors).unwrap();
+                        let mut new_authors = authors
+                            .into_iter()
+                            .filter(|t| t.bot_id.ne(&author.bot_id))
+                            .collect::<Vec<NotionAuth>>();
+                        new_authors.push(author);
+                        store_flows::set(user, serde_json::to_value(new_authors).unwrap(), None);
+                    }
+                    None => {
+                        store_flows::set(user, serde_json::json!([author]), None);
+                    }
+                }
+
+                send_response(
+                    200,
+                    vec![(String::from("Content-Type"), String::from("text/html"))],
+                    SUCCESS_HTML.to_vec(),
+                );
+            }
+            Err(e) => {
+                send_response(
+                    500,
+                    vec![(String::from("Content-Type"), String::from("text/html"))],
+                    e.as_bytes().to_vec(),
+                );
+            }
+        },
+        _ => {
+            send_response(
+                400,
+                vec![(String::from("Content-Type"), String::from("text/html"))],
+                "Invalid params".as_bytes().to_vec(),
+            );
+        }
+    }
+}
+
 // #[application_command_handler]
-async fn handler(ac: ApplicationCommandInteraction) {
+async fn discord_slash_command_handler(ac: ApplicationCommandInteraction) {
     logger::init();
     let bot = ProvidedBot::new(DISCORD_TOKEN.as_str());
     let client = bot.get_client();
