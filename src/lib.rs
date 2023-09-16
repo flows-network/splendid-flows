@@ -71,6 +71,14 @@ async fn handler(ac: ApplicationCommandInteraction) {
             }),
         )
         .await;
+    _ = client
+        .edit_original_interaction_response(
+            &ac.token,
+            &serde_json::json!({
+                "content": "Pong"
+            }),
+        )
+        .await;
 }
 
 async fn register_commands() {
