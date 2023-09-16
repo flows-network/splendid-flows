@@ -275,9 +275,11 @@ async fn register_commands() {
                 .await
             {
                 Err(e) => {
-                    log::error!("Failed delete old command '{}': {:?}", c.name, e);
+                    log::error!("Failed delete the old command '{}': {:?}", c.name, e);
                 }
-                Ok(_) => {}
+                Ok(_) => {
+                    log::info!("Successfully delete the old command: {}", c.name);
+                }
             }
         }
     }
