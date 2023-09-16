@@ -77,10 +77,7 @@ async fn handler(ac: ApplicationCommandInteraction) {
         if let Channel::Guild(gc) = c {
             if let Some(_) = gc.thread_metadata {
                 match client
-                    .get_messages(
-                        ac.channel_id.into(),
-                        format!("?limit=100&before={}", ac.channel_id).as_str(),
-                    )
+                    .get_messages(ac.channel_id.into(), format!("?limit=100").as_str())
                     .await
                 {
                     Ok(messages) if messages.len() > 0 => {
