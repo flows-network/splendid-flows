@@ -79,7 +79,7 @@ async fn register_commands() {
         .build();
 
     let command = serde_json::json!({
-        "name": "Collect thread",
+        "name": "collect_thread",
         "description": "Gather and collect all of the messages of thread",
         "options": []
     });
