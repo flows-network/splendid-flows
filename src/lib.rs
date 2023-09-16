@@ -1,10 +1,10 @@
 use discord_flows::{
     application_command_handler,
-    http::HttpBuilder,
+    http::{Http, HttpBuilder},
     message_handler,
     model::{
         application::interaction::InteractionResponseType,
-        // application_command::CommandDataOptionValue,
+        application_command::CommandDataOptionValue,
         prelude::{
             application::interaction::application_command::ApplicationCommandInteraction, Channel,
             Message,
@@ -30,6 +30,14 @@ use notion_flows::notion::{
 
 use lazy_static::lazy_static;
 
+use webhook_flows::{create_endpoint, request_handler, send_response};
+
+mod auth;
+
+use auth::NotionAuth;
+
+const SUCCESS_HTML: &[u8] = include_bytes!("success.html");
+
 lazy_static! {
     static ref DISCORD_TOKEN: String =
         std::env::var("DISCORD_TOKEN").expect("No discord token configure");
@@ -41,6 +49,9 @@ lazy_static! {
 #[tokio::main(flavor = "current_thread")]
 pub async fn on_deploy() {
     logger::init();
+
+    create_endpoint().await;
+
     let bot = ProvidedBot::new(DISCORD_TOKEN.as_str());
 
     register_commands().await;
@@ -69,7 +80,7 @@ async fn handle(msg: Message) {
     //     .await;
 }
 
-#[application_command_handler]
+// #[application_command_handler]
 async fn handler(ac: ApplicationCommandInteraction) {
     logger::init();
     let bot = ProvidedBot::new(DISCORD_TOKEN.as_str());
@@ -86,6 +97,44 @@ async fn handler(ac: ApplicationCommandInteraction) {
             }),
         )
         .await;
+
+    match ac.data.name.as_str() {
+        "collect_thread" => {
+            let options = ac
+                .data
+                .options
+                .iter()
+                .filter_map(|o| match o.name.as_str() {
+                    "notion_workspace" => match o.resolved.as_ref() {
+                        Some(s) => match s {
+                            CommandDataOptionValue::String(s) => Some(s.clone()),
+                            _ => Some(String::new()),
+                        },
+                        _ => Some(String::new()),
+                    },
+                    "notion_database_id" => match o.resolved.as_ref() {
+                        Some(s) => match s {
+                            CommandDataOptionValue::String(s) => Some(s.clone()),
+                            _ => None,
+                        },
+                        _ => None,
+                    },
+                    _ => None,
+                })
+                .collect();
+            collect_gather(client, &ac, options).await;
+        }
+        "auth_gathering_notion" => {}
+        _ => {}
+    }
+}
+
+async fn collect_gather(client: Http, ac: &ApplicationCommandInteraction, options: Vec<String>) {
+    if options.len() != 2 {
+        log::error!("Not enough options for Notion");
+        return;
+    }
+
     if let Ok(c) = client.get_channel(ac.channel_id.into()).await {
         if let Channel::Guild(gc) = c {
             if let Some(_) = gc.thread_metadata {
@@ -152,8 +201,8 @@ async fn register_commands() {
         .build();
 
     let command = serde_json::json!({
-        "name": "collect_thread",
-        "description": "Gather and collect all of the messages of thread",
+        "name": "auth_gathering_notion",
+        "description": "Authorize Notion for gathering messages",
         "options": []
     });
 
@@ -161,8 +210,35 @@ async fn register_commands() {
         .create_global_application_command(&command)
         .await
     {
-        Ok(_) => log::info!("Successfully registered command"),
-        Err(err) => log::error!("Error registering command: {}", err),
+        Ok(_) => log::info!("Successfully registered command 'auth_gathering_notion'"),
+        Err(err) => log::error!("Error registering command 'auth_gathering_notion': {}", err),
+    }
+
+    let command = serde_json::json!({
+        "name": "collect_thread",
+        "description": "Gather and collect all of the messages of thread",
+        "options": [
+            {
+                "name": "notion_workspace",
+                "description": "The name of the workspace",
+                "type": 3,
+                "required": false
+            },
+            {
+                "name": "notion_database_id",
+                "description": "The database where messages will be gathered into",
+                "type": 3,
+                "required": true
+            }
+        ]
+    });
+
+    match http_client
+        .create_global_application_command(&command)
+        .await
+    {
+        Ok(_) => log::info!("Successfully registered command 'collect_thread'"),
+        Err(err) => log::error!("Error registering command 'collect_thread': {}", err),
     }
 }
 
