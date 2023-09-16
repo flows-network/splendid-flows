@@ -25,6 +25,7 @@ lazy_static! {
 #[no_mangle]
 #[tokio::main(flavor = "current_thread")]
 pub async fn on_deploy() {
+    logger::init();
     let bot = ProvidedBot::new(DISCORD_TOKEN.as_str());
 
     register_commands().await;
