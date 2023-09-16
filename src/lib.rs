@@ -79,7 +79,7 @@ async fn handler(ac: ApplicationCommandInteraction) {
                 match client
                     .get_messages(
                         ac.channel_id.into(),
-                        format!("limit=100&before={}", ac.channel_id).as_str(),
+                        format!("?limit=100&before={}", ac.channel_id).as_str(),
                     )
                     .await
                 {
