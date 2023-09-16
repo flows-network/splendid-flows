@@ -17,9 +17,9 @@ use lazy_static::lazy_static;
 
 lazy_static! {
     static ref DISCORD_TOKEN: String =
-        String::from(std::option_env!("DISCORD_TOKEN").expect("No discord token configure"));
+        std::env::var("DISCORD_TOKEN").expect("No discord token configure");
     static ref APPLICATION_ID: String =
-        String::from(std::option_env!("APPLICATION_ID").expect("No application_id configure"));
+        std::env::var("APPLICATION_ID").expect("No application_id configure");
 }
 
 #[no_mangle]
