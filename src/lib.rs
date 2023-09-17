@@ -268,22 +268,22 @@ async fn register_commands() {
         .application_id(APPLICATION_ID.parse().unwrap())
         .build();
 
-    if let Ok(commands) = http_client.get_global_application_commands().await {
-        log::debug!("Found {} old commands", commands.len());
-        for c in commands.iter() {
-            match http_client
-                .delete_global_application_command(c.id.into())
-                .await
-            {
-                Err(e) => {
-                    log::error!("Failed delete the old command '{}': {:?}", c.name, e);
-                }
-                Ok(_) => {
-                    log::info!("Successfully delete the old command: {}", c.name);
-                }
-            }
-        }
-    }
+    // if let Ok(commands) = http_client.get_global_application_commands().await {
+    //     log::debug!("Found {} old commands", commands.len());
+    //     for c in commands.iter() {
+    //         match http_client
+    //             .delete_global_application_command(c.id.into())
+    //             .await
+    //         {
+    //             Err(e) => {
+    //                 log::error!("Failed delete the old command '{}': {:?}", c.name, e);
+    //             }
+    //             Ok(_) => {
+    //                 log::info!("Successfully delete the old command: {}", c.name);
+    //             }
+    //         }
+    //     }
+    // }
 
     let command = serde_json::json!({
         "name": "auth_gathering_notion",
@@ -304,16 +304,16 @@ async fn register_commands() {
         "description": "Gather and collect all of the messages of thread",
         "options": [
             {
-                "name": "notion_workspace",
-                "description": "The name of the workspace",
-                "type": 3,
-                "required": false
-            },
-            {
                 "name": "notion_database_id",
                 "description": "The database where messages will be gathered into",
                 "type": 3,
                 "required": true
+            },
+            {
+                "name": "notion_workspace",
+                "description": "The name of the workspace",
+                "type": 3,
+                "required": false
             }
         ]
     });
