@@ -179,21 +179,22 @@ async fn discord_slash_command_handler(ac: ApplicationCommandInteraction) {
                 .collect();
             collect_gather(client, &ac, options).await;
         }
-        "auth_gathering_notion" => {}
-        _ => {
+        "auth_gathering_notion" => {
             _ = client
                 .edit_original_interaction_response(
                     &ac.token,
                     &serde_json::json!({
                         "content":
                             format!(
-                                "Click following link to authorized the Notion App\n{}",
-                                NOTION_AUTH_URL.as_str()
+                                "Click following link to authorized the Notion App\n{}&state={}",
+                                NOTION_AUTH_URL.as_str(),
+                                ac.user.id
                             )
                     }),
                 )
                 .await;
         }
+        _ => {}
     }
 }
 
