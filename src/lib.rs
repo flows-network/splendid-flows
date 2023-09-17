@@ -186,7 +186,7 @@ async fn discord_slash_command_handler(ac: ApplicationCommandInteraction) {
                     &serde_json::json!({
                         "content":
                             format!(
-                                "Click following link to authorized the Notion App\n{}&state={}",
+                                "Click following link to authorized the Notion App\n{}&state=discord_user_{}",
                                 NOTION_AUTH_URL.as_str(),
                                 ac.user.id
                             )
