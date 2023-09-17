@@ -163,9 +163,9 @@ async fn discord_slash_command_handler(ac: ApplicationCommandInteraction) {
                     "notion_workspace" => match o.resolved.as_ref() {
                         Some(s) => match s {
                             CommandDataOptionValue::String(s) => Some(s.clone()),
-                            _ => Some(String::new()),
+                            _ => None,
                         },
-                        _ => Some(String::new()),
+                        _ => None,
                     },
                     "notion_database_id" => match o.resolved.as_ref() {
                         Some(s) => match s {
@@ -199,10 +199,47 @@ async fn discord_slash_command_handler(ac: ApplicationCommandInteraction) {
 }
 
 async fn collect_gather(client: Http, ac: &ApplicationCommandInteraction, options: Vec<String>) {
-    if options.len() != 2 {
-        log::error!("Not enough options for Notion");
-        return;
-    }
+    let user = format!("discord_user_{}", ac.user.id);
+
+    let access_token = match store_flows::get(user.as_str()) {
+        Some(authors) => {
+            let mut authors: Vec<NotionAuth> = serde_json::from_value(authors).unwrap();
+            match options.len() == 1 {
+                true => authors.pop().unwrap().access_token,
+                false => match authors
+                    .into_iter()
+                    .find_map(|a| match a.workspace_name.as_ref() {
+                        Some(wn) if wn.eq(options[1].as_str()) => Some(a.access_token),
+                        _ => None,
+                    }) {
+                    Some(at) => at,
+                    None => {
+                        _ = client
+                            .edit_original_interaction_response(
+                                &ac.token,
+                                &serde_json::json!({
+                                    "content": "Notion workspace has not been authorized."
+                                }),
+                            )
+                            .await;
+                        return;
+                    }
+                },
+            }
+        }
+        None => {
+            log::error!("Not authorized user '{}'", user);
+            _ = client
+                .edit_original_interaction_response(
+                    &ac.token,
+                    &serde_json::json!({
+                        "content": "Notion App has not been installed."
+                    }),
+                )
+                .await;
+            return;
+        }
+    };
 
     if let Ok(c) = client.get_channel(ac.channel_id.into()).await {
         if let Channel::Guild(gc) = c {
@@ -212,10 +249,8 @@ async fn collect_gather(client: Http, ac: &ApplicationCommandInteraction, option
                     .await
                 {
                     Ok(messages) if messages.len() > 0 => {
-                        let notion =
-                            NotionApi::new(std::env::var("NOTION_INTERNAL_SECRET").unwrap())
-                                .unwrap();
-                        let page = new_page(gc.name.as_str(), messages);
+                        let notion = NotionApi::new(access_token).unwrap();
+                        let page = new_page(gc.name.as_str(), messages, options[0].as_str());
                         match notion.create_page(page).await {
                             Ok(_) => {
                                 _ = client
@@ -328,9 +363,8 @@ async fn register_commands() {
     }
 }
 
-fn new_page(thread_name: &str, messages: Vec<Message>) -> PageCreateRequest {
-    let database_id = std::env::var("NOTION_PARENT_DATABASE_ID").unwrap();
-    let database_id = DatabaseId::from_str(database_id.as_str()).unwrap();
+fn new_page(thread_name: &str, messages: Vec<Message>, database_id: &str) -> PageCreateRequest {
+    let database_id = DatabaseId::from_str(database_id).unwrap();
 
     let title = RichText::Text {
         rich_text: RichTextCommon {
