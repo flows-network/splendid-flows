@@ -31,9 +31,9 @@ pub async fn assign(client: &Http, ac: &ApplicationCommandInteraction, tc: &Guil
         Some(mut r) => {
             // Update the existing record
             let member_opt = ac.data.options.iter().find(|o| o.name == "member");
-            let assignee = member_opt.unwrap().value.clone();
-            log::debug!("-------------{:?}", assignee);
-            // r.fields.assignee = Some();
+            let assignee = member_opt.unwrap().value.clone().unwrap();
+            let assignee = assignee.as_str().unwrap();
+            r.fields.assignee = Some(assignee.to_owned());
             airtable
                 .update_records(table_name.as_str(), vec![r])
                 .await
