@@ -1,9 +1,11 @@
 use serde::{Deserialize, Serialize};
 
+pub const FIELDS: &[&str] = &["Thread", "Title", "Assignee", "Status"];
+
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Status {
     Todo,
-    #[serde(rename(deserialize = "In progress"))]
+    #[serde(rename = "In progress")]
     InProgress,
     Done,
 }
@@ -11,8 +13,8 @@ pub enum Status {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Project {
-    thread: String,
-    title: String,
-    assignee: Option<String>,
-    status: Status,
+    pub thread: String,
+    pub title: String,
+    pub assignee: Option<String>,
+    pub status: Status,
 }
