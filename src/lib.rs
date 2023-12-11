@@ -66,7 +66,9 @@ pub async fn handler(ac: ApplicationCommandInteraction) {
                             "pj_assign" => {
                                 handler::assign(&client, &ac, &gc).await;
                             }
-                            "pj_evolve" => {}
+                            "pj_evolve" => {
+                                handler::evolve(&client, &ac, &gc).await;
+                            }
                             _ => {}
                         },
                         false => {

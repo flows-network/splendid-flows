@@ -9,7 +9,7 @@ use discord_flows::{
     },
 };
 
-pub async fn assign(client: &Http, ac: &ApplicationCommandInteraction, tc: &GuildChannel) {
+pub async fn evolve(client: &Http, ac: &ApplicationCommandInteraction, tc: &GuildChannel) {
     let thread_link = util::compose_thread_link(tc);
     // Initialize the Airtable client.
     let airtable = Airtable::new_from_env();
@@ -30,15 +30,15 @@ pub async fn assign(client: &Http, ac: &ApplicationCommandInteraction, tc: &Guil
     let msg = match records.into_iter().next() {
         Some(mut r) => {
             // Update the existing record
-            let member_opt = ac.data.options.iter().find(|o| o.name == "member");
-            let assignee = member_opt.unwrap().value.clone().unwrap();
-            let assignee = assignee.as_str().unwrap();
-            r.fields.assignee = Some(assignee.to_owned());
+            let status_opt = ac.data.options.iter().find(|o| o.name == "status");
+            let status = status_opt.unwrap().value.clone().unwrap();
+            let status = status.as_str().unwrap();
+            r.fields.status = serde_json::from_str(status).unwrap();
             airtable
                 .update_records(table_name.as_str(), vec![r])
                 .await
                 .unwrap();
-            "Member assigned"
+            "Status updated"
         }
         None => "This thread has not been made to a task",
     };
