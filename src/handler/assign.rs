@@ -9,7 +9,7 @@ use discord_flows::{
     },
 };
 
-pub async fn task(client: &Http, ac: &ApplicationCommandInteraction, tc: &GuildChannel) {
+pub async fn assign(client: &Http, ac: &ApplicationCommandInteraction, tc: &GuildChannel) {
     let thread_link = util::compose_thread_link(tc);
     // Initialize the Airtable client.
     let airtable = Airtable::new_from_env();
@@ -30,31 +30,17 @@ pub async fn task(client: &Http, ac: &ApplicationCommandInteraction, tc: &GuildC
     let msg = match records.into_iter().next() {
         Some(mut r) => {
             // Update the existing record
-            r.fields.title = tc.name.clone();
+            let member_opt = ac.data.options.iter().find(|o| o.name == "member");
+            let assignee = member_opt.unwrap().value.clone();
+            log::debug!("-------------{:?}", assignee);
+            // r.fields.assignee = Some();
             airtable
                 .update_records(table_name.as_str(), vec![r])
                 .await
                 .unwrap();
             "Task updated"
         }
-        None => {
-            // Create a new record
-            let r = Record {
-                id: String::new(),
-                fields: Project {
-                    thread: thread_link,
-                    title: tc.name.clone(),
-                    assignee: None,
-                    status: Status::Todo,
-                },
-                created_time: None,
-            };
-            airtable
-                .create_records(table_name.as_str(), vec![r])
-                .await
-                .unwrap();
-            "Task created"
-        }
+        None => "This thread has not been made to a task",
     };
 
     _ = client
