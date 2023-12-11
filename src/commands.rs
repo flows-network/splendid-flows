@@ -20,6 +20,7 @@ pub async fn register_commands() {
         }
     }
 
+    // Refer https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure
     let commands = serde_json::json!([
         {
             "name": "pj_make_task",
