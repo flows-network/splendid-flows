@@ -16,10 +16,11 @@ pub async fn task(client: &Http, ac: &ApplicationCommandInteraction, tc: &GuildC
 
     // Get the current records from a table.
     let records: Vec<Record<Project>> = airtable
-        .list_records(
+        .filter_records(
             "Project",
-            "Grid view",
+            None,
             vec!["Thread", "Title", "Assignee", "Status"],
+            Some(format!(r#"{{Thread}} = "{thread_link}""#).as_str()),
         )
         .await
         .unwrap();
