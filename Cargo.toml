@@ -14,7 +14,7 @@ airtable-api-wasi = "0.2.0"
 discord-flows = "0.6.3"
 flowsnet-platform-sdk = "0.1.6"
 log = "0.4.20"
-reqwest_wasi = "0.11.16"
+reqwest_wasi = { version = "0.11.16", features = ["wasmedge-tls"] }
 serde = "1.0.193"
 serde_json = "1.0"
 tokio_wasi = { version = "1.25.0", features = ["rt", "macros"] }
