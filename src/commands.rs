@@ -7,10 +7,10 @@ pub async fn register_commands() {
     let app_id = std::env::var("DISCORD_APP_ID").unwrap();
     let guild_id = std::env::var("DISCORD_GUILD_ID").unwrap();
 
-    let commands = serde_json::json!({
+    let commands = serde_json::json!([{
         "name": "task",
         "description": "Make this thread as a task",
-    });
+    }]);
 
     let http_client = HttpBuilder::new(discord_token)
         .application_id(app_id.parse().unwrap())
