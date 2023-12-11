@@ -1,6 +1,8 @@
 use discord_flows::http::HttpBuilder;
+use flowsnet_platform_sdk::logger;
 
 pub async fn register_commands() {
+    logger::init();
     let discord_token = std::env::var("DISCORD_TOKEN").unwrap();
     let app_id = std::env::var("DISCORD_APP_ID").unwrap();
     let guild_id = std::env::var("DISCORD_GUILD_ID").unwrap();

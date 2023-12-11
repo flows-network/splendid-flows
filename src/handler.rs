@@ -8,6 +8,10 @@ use serde_json::Value;
 
 #[application_command_handler]
 async fn handler(ac: ApplicationCommandInteraction) {
+    h(ac).await;
+}
+
+async fn h(ac: ApplicationCommandInteraction) {
     logger::init();
     let discord_token = std::env::var("DISCORD_TOKEN").unwrap();
     let bot = ProvidedBot::new(discord_token);
