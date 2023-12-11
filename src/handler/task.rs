@@ -25,7 +25,7 @@ pub async fn task(client: &Http, ac: &ApplicationCommandInteraction, tc: &GuildC
         .unwrap();
     // Iterate over the records.
     for (i, record) in records.iter().enumerate() {
-        println!("{} - {:?}", i, record);
+        log::debug!("{} - {:?}", i, record);
     }
 
     _ = client
