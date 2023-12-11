@@ -33,8 +33,7 @@ pub async fn evolve(client: &Http, ac: &ApplicationCommandInteraction, tc: &Guil
             let status_opt = ac.data.options.iter().find(|o| o.name == "status");
             let status = status_opt.unwrap().value.clone().unwrap();
             let status = status.as_str().unwrap();
-            log::debug!("----------------{}", status);
-            r.fields.status = serde_json::from_str(status).unwrap();
+            r.fields.status = serde_json::from_str(format!(r#""{status}""#).as_str()).unwrap();
             airtable
                 .update_records(table_name.as_str(), vec![r])
                 .await
