@@ -5,10 +5,5 @@ use discord_flows::model::GuildChannel;
 pub fn compose_thread_link(tc: &GuildChannel) -> String {
     // tc has been ensured to be a thread
     // so it has parent_id
-    format!(
-        "https://discord.com/channels/{}/{}/threads/{}",
-        tc.guild_id,
-        tc.parent_id.unwrap(),
-        tc.id
-    )
+    format!("https://discord.com/channels/{}/{}", tc.guild_id, tc.id)
 }
