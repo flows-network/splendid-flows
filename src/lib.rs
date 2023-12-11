@@ -1,14 +1,10 @@
-use discord_flows::{
-    application_command_handler,
-    http::HttpBuilder,
-    message_handler,
-    model::{
-        prelude::application::interaction::application_command::ApplicationCommandInteraction,
-        Message,
-    },
-    Bot, ProvidedBot,
-};
+use discord_flows::{message_handler, model::Message, Bot, ProvidedBot};
 use flowsnet_platform_sdk::logger;
+
+mod commands;
+mod handler;
+
+pub use handler::*;
 
 #[no_mangle]
 #[tokio::main(flavor = "current_thread")]
@@ -16,7 +12,7 @@ pub async fn on_deploy() {
     let discord_token = std::env::var("DISCORD_TOKEN").unwrap();
     let bot = ProvidedBot::new(&discord_token);
 
-    // register_commands().await;
+    commands::register_commands().await;
 
     bot.listen_to_messages().await;
 
