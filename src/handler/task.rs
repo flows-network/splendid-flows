@@ -26,14 +26,17 @@ pub async fn task(client: &Http, ac: &ApplicationCommandInteraction, tc: &GuildC
         )
         .await
         .unwrap();
-    match records.into_iter().next() {
+
+    let msg = match records.into_iter().next() {
         Some(mut r) => {
             // Update the existing record
             r.fields.title = tc.name.clone();
+            log::debug!("------- {}", tc.name);
             airtable
                 .update_records(table_name.as_str(), vec![r])
                 .await
                 .unwrap();
+            "Task updated"
         }
         None => {
             // Create a new record
@@ -51,14 +54,15 @@ pub async fn task(client: &Http, ac: &ApplicationCommandInteraction, tc: &GuildC
                 .create_records(table_name.as_str(), vec![r])
                 .await
                 .unwrap();
+            "Task created"
         }
-    }
+    };
 
     _ = client
         .edit_original_interaction_response(
             &ac.token,
             &serde_json::json!({
-                "content": "--"
+                "content": msg
             }),
         )
         .await;
