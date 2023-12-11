@@ -34,6 +34,7 @@ async fn handle(msg: Message) {
         return;
     }
 
+    /*
     _ = client
         .send_message(
             channel_id.into(),
@@ -42,4 +43,5 @@ async fn handle(msg: Message) {
             }),
         )
         .await;
+    */
 }
