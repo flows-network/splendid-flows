@@ -28,6 +28,7 @@ pub async fn emoji(client: &Http, tc: &GuildChannel) -> &'static str {
             "roles": [guild_id]
         });
         let emoji = client.create_emoji(guild_id, &body, None).await.unwrap();
+        log::debug!("========{}: {:?}", n.0, emoji.id);
         store_flows::set(
             n.0,
             Value::Number(Number::from(emoji.id.as_u64().to_owned())),
