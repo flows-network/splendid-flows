@@ -51,14 +51,14 @@ pub async fn handler(ac: ApplicationCommandInteraction) {
 
     let mut error_msg = String::new();
 
+    let working_channel_id = std::env::var("DISCORD_PROJECT_CHANNEL_ID").unwrap();
     // Ensure it is a GuildChannel
     match channel {
         Channel::Guild(gc) => {
             // Ensure message is sent from a thread
             match gc.parent_id {
                 Some(pc) => {
-                    let parent_channel_id = std::env::var("DISCORD_PROJECT_CHANNEL_ID").unwrap();
-                    match parent_channel_id.parse::<u64>().unwrap() == pc.as_u64().to_owned() {
+                    match working_channel_id.parse::<u64>().unwrap() == pc.as_u64().to_owned() {
                         true => match ac.data.name.as_str() {
                             "pj_make_task" => {
                                 handler::task(&client, &ac, &gc).await;
@@ -72,11 +72,23 @@ pub async fn handler(ac: ApplicationCommandInteraction) {
                             _ => {}
                         },
                         false => {
-                            error_msg = format!("Only work in channel `{}`", parent_channel_id);
+                            error_msg = format!("Only work in channel `{}`", working_channel_id);
                         }
                     }
                 }
-                None => error_msg = String::from("Not in a thread"),
+                None => {
+                    match working_channel_id.parse::<u64>().unwrap() == gc.id.as_u64().to_owned() {
+                        true => match ac.data.name.as_str() {
+                            "pj_create_emojis" => {
+                                handler::emoji(&client, &gc).await;
+                            }
+                            _ => {}
+                        },
+                        false => {
+                            error_msg = format!("Only work in channel `{}`", working_channel_id);
+                        }
+                    }
+                }
             }
         }
         _ => {

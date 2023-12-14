@@ -23,6 +23,10 @@ pub async fn register_commands() {
     // Refer https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure
     let commands = serde_json::json!([
         {
+            "name": "pj_create_emojis",
+            "description": "Create emojis",
+        },
+        {
             "name": "pj_make_task",
             "description": "Make this thread as a task",
         },{
@@ -71,27 +75,4 @@ pub async fn register_commands() {
         Ok(_) => log::info!("Successfully registered commands"),
         Err(err) => log::error!("Error registering commands: {}", err),
     }
-
-    // Create emoji
-
-    let emojis = http_client.get_emojis(guild_id).await.unwrap();
-    for emoji in emojis.iter() {
-        if emoji.name.starts_with("Todo") {
-            http_client
-                .delete_emoji(guild_id, emoji.id.into())
-                .await
-                .unwrap();
-        }
-    }
-
-    let todo = include_str!("emoji/todo");
-    let body = serde_json::json!({
-        "name": "Todo",
-        "image": todo,
-        "roles": [guild_id]
-    });
-    http_client
-        .create_emoji(guild_id, &body, None)
-        .await
-        .unwrap();
 }
