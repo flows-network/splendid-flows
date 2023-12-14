@@ -55,36 +55,42 @@ pub async fn handler(ac: ApplicationCommandInteraction) {
     // Ensure it is a GuildChannel
     match channel {
         Channel::Guild(gc) => {
-            // Ensure message is sent from a thread
-            match gc.parent_id {
-                Some(pc) => {
-                    match working_channel_id.parse::<u64>().unwrap() == pc.as_u64().to_owned() {
-                        true => match ac.data.name.as_str() {
-                            "pj_make_task" => {
-                                handler::task(&client, &ac, &gc).await;
-                            }
-                            "pj_assign" => {
-                                handler::assign(&client, &ac, &gc).await;
-                            }
-                            "pj_evolve" => {
-                                handler::evolve(&client, &ac, &gc).await;
-                            }
-                            _ => {}
-                        },
-                        false => {
-                            error_msg = format!("Only work in channel `{}`", working_channel_id);
-                        }
+            match working_channel_id.parse::<u64>().unwrap() == gc.id.as_u64().to_owned() {
+                // In the working channel
+                true => match ac.data.name.as_str() {
+                    "pj_create_emojis" => {
+                        handler::emoji(&client, &gc).await;
                     }
-                }
-                None => {
-                    match working_channel_id.parse::<u64>().unwrap() == gc.id.as_u64().to_owned() {
-                        true => match ac.data.name.as_str() {
-                            "pj_create_emojis" => {
-                                handler::emoji(&client, &gc).await;
+                    _ => {
+                        error_msg = String::from("Command only work in thread");
+                    }
+                },
+                false => {
+                    // Ensure message is sent from a thread
+                    match gc.parent_id {
+                        Some(pc) => {
+                            match working_channel_id.parse::<u64>().unwrap()
+                                == pc.as_u64().to_owned()
+                            {
+                                true => match ac.data.name.as_str() {
+                                    "pj_make_task" => {
+                                        handler::task(&client, &ac, &gc).await;
+                                    }
+                                    "pj_assign" => {
+                                        handler::assign(&client, &ac, &gc).await;
+                                    }
+                                    "pj_evolve" => {
+                                        handler::evolve(&client, &ac, &gc).await;
+                                    }
+                                    _ => {}
+                                },
+                                false => {
+                                    error_msg =
+                                        format!("Only work in channel `{}`", working_channel_id);
+                                }
                             }
-                            _ => {}
-                        },
-                        false => {
+                        }
+                        None => {
                             error_msg = format!("Only work in channel `{}`", working_channel_id);
                         }
                     }
