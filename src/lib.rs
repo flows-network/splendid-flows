@@ -73,6 +73,17 @@ pub async fn handler(ac: ApplicationCommandInteraction) {
                             )
                             .await;
                     }
+                    "pj_all_assigned" => {
+                        let all_tasks = handler::all_assigned(&ac).await;
+                        _ = client
+                            .edit_original_interaction_response(
+                                &ac.token,
+                                &serde_json::json!({
+                                    "content": all_tasks
+                                }),
+                            )
+                            .await;
+                    }
                     _ => {
                         msg = "Command only work in thread";
                     }

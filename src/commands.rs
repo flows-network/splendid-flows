@@ -31,6 +31,18 @@ pub async fn register_commands() {
             "description": "Show all tasks",
         },
         {
+            "name": "pj_all_assigned",
+            "description": "Show all tasks assigned to the user",
+            "options": [
+                {
+                    "name": "member",
+                    "description": "The member whose tasks to show",
+                    "type": 6,
+                    "required": true
+                }
+            ]
+        },
+        {
             "name": "pj_make_task",
             "description": "Make this thread as a task",
         },{
