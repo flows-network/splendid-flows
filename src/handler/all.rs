@@ -1,7 +1,17 @@
 use crate::typo::*;
 use airtable_api::{Airtable, Record};
 
+const EMOJIS: &[&str] = &["pj_todo", "pj_inprogress", "pj_done"];
+
 pub async fn all() -> String {
+    let emojis = EMOJIS
+        .iter()
+        .map(|e| {
+            let eid = store_flows::get(*e).unwrap();
+            format!("<:{}:{}>", e, eid)
+        })
+        .collect::<Vec<String>>();
+
     // Initialize the Airtable client.
     let airtable = Airtable::new_from_env();
 
@@ -17,9 +27,9 @@ pub async fn all() -> String {
         .iter()
         .map(|r| {
             let emoji = match r.fields.status {
-                Status::Todo => ":pj_todo:",
-                Status::InProgress => ":pj_inprogress:",
-                Status::Done => ":pj_done:",
+                Status::Todo => &emojis[0],
+                Status::InProgress => &emojis[1],
+                Status::Done => &emojis[2],
             };
             format!("{} {}", emoji, r.fields.thread)
         })

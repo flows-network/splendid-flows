@@ -1,4 +1,5 @@
 use discord_flows::{http::Http, model::GuildChannel};
+use serde_json::{Number, Value};
 
 const NAMES: &[(&str, &str)] = &[
     ("pj_todo", include_str!("../emoji/todo")),
@@ -26,7 +27,12 @@ pub async fn emoji(client: &Http, tc: &GuildChannel) -> &'static str {
             "image": n.1,
             "roles": [guild_id]
         });
-        client.create_emoji(guild_id, &body, None).await.unwrap();
+        let emoji = client.create_emoji(guild_id, &body, None).await.unwrap();
+        store_flows::set(
+            n.0,
+            Value::Number(Number::from(emoji.id.as_u64().to_owned())),
+            None,
+        );
     }
 
     "Emojis have been created"
