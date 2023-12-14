@@ -9,7 +9,7 @@ pub async fn all() -> String {
 
     // Get the existing records from a table.
     let records: Vec<Record<Project>> = airtable
-        .filter_records(table_name.as_str(), None, FIELDS.to_vec(), Some("TRUE"))
+        .filter_records(table_name.as_str(), None, FIELDS.to_vec(), Some("1=1"))
         .await
         .unwrap();
 
