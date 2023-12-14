@@ -18,6 +18,8 @@ pub async fn all() -> String {
         }
     }
 
+    log::debug!("{:?}", emojis);
+
     // Initialize the Airtable client.
     let airtable = Airtable::new_from_env();
 
