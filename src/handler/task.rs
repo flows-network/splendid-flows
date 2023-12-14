@@ -1,15 +1,9 @@
 use crate::typo::*;
 use crate::util;
 use airtable_api::{Airtable, Record};
-use discord_flows::{
-    http::Http,
-    model::{
-        prelude::application::interaction::application_command::ApplicationCommandInteraction,
-        GuildChannel,
-    },
-};
+use discord_flows::model::GuildChannel;
 
-pub async fn task(client: &Http, ac: &ApplicationCommandInteraction, tc: &GuildChannel) {
+pub async fn task(tc: &GuildChannel) -> &'static str {
     let thread_link = util::compose_thread_link(tc);
     // Initialize the Airtable client.
     let airtable = Airtable::new_from_env();
@@ -27,7 +21,7 @@ pub async fn task(client: &Http, ac: &ApplicationCommandInteraction, tc: &GuildC
         .await
         .unwrap();
 
-    let msg = match records.into_iter().next() {
+    match records.into_iter().next() {
         Some(mut r) => {
             // Update the existing record
             r.fields.title = tc.name.clone();
@@ -55,14 +49,5 @@ pub async fn task(client: &Http, ac: &ApplicationCommandInteraction, tc: &GuildC
                 .unwrap();
             "Task created"
         }
-    };
-
-    _ = client
-        .edit_original_interaction_response(
-            &ac.token,
-            &serde_json::json!({
-                "content": msg
-            }),
-        )
-        .await;
+    }
 }

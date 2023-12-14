@@ -49,9 +49,10 @@ pub async fn handler(ac: ApplicationCommandInteraction) {
 
     let channel = client.get_channel(ac.channel_id.into()).await.unwrap();
 
-    let mut error_msg = String::new();
-
     let working_channel_id = std::env::var("DISCORD_PROJECT_CHANNEL_ID").unwrap();
+    let error_channel_msg = format!("Only work in channel `{}`", working_channel_id);
+    let mut msg = "";
+
     // Ensure it is a GuildChannel
     match channel {
         Channel::Guild(gc) => {
@@ -59,10 +60,10 @@ pub async fn handler(ac: ApplicationCommandInteraction) {
                 // In the working channel
                 true => match ac.data.name.as_str() {
                     "pj_create_emojis" => {
-                        handler::emoji(&client, &gc).await;
+                        msg = handler::emoji(&client, &gc).await;
                     }
                     _ => {
-                        error_msg = String::from("Command only work in thread");
+                        msg = "Command only work in thread";
                     }
                 },
                 false => {
@@ -74,40 +75,39 @@ pub async fn handler(ac: ApplicationCommandInteraction) {
                             {
                                 true => match ac.data.name.as_str() {
                                     "pj_make_task" => {
-                                        handler::task(&client, &ac, &gc).await;
+                                        msg = handler::task(&gc).await;
                                     }
                                     "pj_assign" => {
-                                        handler::assign(&client, &ac, &gc).await;
+                                        msg = handler::assign(&ac, &gc).await;
                                     }
                                     "pj_evolve" => {
-                                        handler::evolve(&client, &ac, &gc).await;
+                                        msg = handler::evolve(&ac, &gc).await;
                                     }
                                     _ => {}
                                 },
                                 false => {
-                                    error_msg =
-                                        format!("Only work in channel `{}`", working_channel_id);
+                                    msg = error_channel_msg.as_str();
                                 }
                             }
                         }
                         None => {
-                            error_msg = format!("Only work in channel `{}`", working_channel_id);
+                            msg = error_channel_msg.as_str();
                         }
                     }
                 }
             }
         }
         _ => {
-            error_msg = String::from("Not in a thread");
+            msg = "Not in a thread";
         }
     }
 
-    if error_msg != "" {
+    if msg != "" {
         _ = client
             .edit_original_interaction_response(
                 &ac.token,
                 &serde_json::json!({
-                    "content": error_msg
+                    "content": msg
                 }),
             )
             .await;
