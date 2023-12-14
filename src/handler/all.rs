@@ -8,7 +8,7 @@ pub async fn all() -> String {
     for e in EMOJIS.iter() {
         match store_flows::get(*e) {
             Some(eid) => {
-                let eid = eid.as_u64().unwrap();
+                let eid = eid.as_str().unwrap();
                 let emoji = format!("<:{}:{}>", e, eid);
                 emojis.push(emoji);
             }
@@ -17,8 +17,6 @@ pub async fn all() -> String {
             }
         }
     }
-
-    log::debug!("{:?}", emojis);
 
     // Initialize the Airtable client.
     let airtable = Airtable::new_from_env();
