@@ -4,13 +4,19 @@ use airtable_api::{Airtable, Record};
 const EMOJIS: &[&str] = &["pj_todo", "pj_inprogress", "pj_done"];
 
 pub async fn all() -> String {
-    let emojis = EMOJIS
-        .iter()
-        .map(|e| {
-            let eid = store_flows::get(*e).unwrap();
-            format!("<:{}:{}>", e, eid)
-        })
-        .collect::<Vec<String>>();
+    let mut emojis = vec![];
+    for e in EMOJIS.iter() {
+        match store_flows::get(*e) {
+            Some(eid) => {
+                let eid = eid.as_u64().unwrap();
+                let emoji = format!("<:{}:{}>", e, eid);
+                emojis.push(emoji);
+            }
+            None => {
+                return String::from("Please create emojis first");
+            }
+        }
+    }
 
     // Initialize the Airtable client.
     let airtable = Airtable::new_from_env();
