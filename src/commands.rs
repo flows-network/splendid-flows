@@ -71,4 +71,17 @@ pub async fn register_commands() {
         Ok(_) => log::info!("Successfully registered commands"),
         Err(err) => log::error!("Error registering commands: {}", err),
     }
+
+    // Create emoji
+
+    let todo = include_str!("emoji/todo");
+    let body = serde_json::json!({
+        "name": "Todo",
+        "image": todo,
+        "roles": [guild_id]
+    });
+    http_client
+        .create_emoji(guild_id, &body, None)
+        .await
+        .unwrap();
 }
