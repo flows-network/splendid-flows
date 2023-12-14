@@ -27,6 +27,10 @@ pub async fn register_commands() {
             "description": "Create emojis",
         },
         {
+            "name": "pj_all",
+            "description": "Show all tasks",
+        },
+        {
             "name": "pj_make_task",
             "description": "Make this thread as a task",
         },{

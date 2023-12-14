@@ -62,6 +62,17 @@ pub async fn handler(ac: ApplicationCommandInteraction) {
                     "pj_create_emojis" => {
                         msg = handler::emoji(&client, &gc).await;
                     }
+                    "pj_all" => {
+                        let all_tasks = handler::all().await;
+                        _ = client
+                            .edit_original_interaction_response(
+                                &ac.token,
+                                &serde_json::json!({
+                                    "content": all_tasks
+                                }),
+                            )
+                            .await;
+                    }
                     _ => {
                         msg = "Command only work in thread";
                     }
