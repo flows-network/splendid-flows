@@ -74,6 +74,16 @@ pub async fn register_commands() {
 
     // Create emoji
 
+    let emojis = http_client.get_emojis(guild_id).await.unwrap();
+    for emoji in emojis.iter() {
+        if emoji.name.starts_with("Todo") {
+            http_client
+                .delete_emoji(guild_id, emoji.id.into())
+                .await
+                .unwrap();
+        }
+    }
+
     let todo = include_str!("emoji/todo");
     let body = serde_json::json!({
         "name": "Todo",
