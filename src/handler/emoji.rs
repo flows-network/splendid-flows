@@ -16,14 +16,17 @@ pub async fn emoji(client: &Http, tc: &GuildChannel) -> &'static str {
                     .delete_emoji(guild_id, emoji.id.into())
                     .await
                     .unwrap();
-                let body = serde_json::json!({
-                    "name": n.0,
-                    "image": n.1,
-                    "roles": [guild_id]
-                });
-                client.create_emoji(guild_id, &body, None).await.unwrap();
             }
         }
+    }
+
+    for n in NAMES.iter() {
+        let body = serde_json::json!({
+            "name": n.0,
+            "image": n.1,
+            "roles": [guild_id]
+        });
+        client.create_emoji(guild_id, &body, None).await.unwrap();
     }
 
     "Emojis have been created"
